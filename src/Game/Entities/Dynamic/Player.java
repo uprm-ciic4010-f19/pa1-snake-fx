@@ -6,6 +6,10 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.Random;
 
+import Game.GameStates.GameState;
+import Game.GameStates.MenuState;
+import Game.GameStates.State;
+
 /**
  * Created by AlexVR on 7/2/2018.
  */
@@ -19,6 +23,8 @@ public class Player {
     public int yCoord;
 
     public int moveCounter;
+    public int speed; // ****************************
+    public int counter; // **************************
 
     public String direction;//is your first name one?
 
@@ -27,6 +33,7 @@ public class Player {
         xCoord = 0;
         yCoord = 0;
         moveCounter = 0;
+        speed = 15;
         direction= "Right";
         justAte = false;
         lenght= 1;
@@ -35,7 +42,7 @@ public class Player {
 
     public void tick(){
         moveCounter++;
-        if(moveCounter>=5) {
+        if(moveCounter>=speed) {
             checkCollisionAndMove();
             moveCounter=0;
         }
@@ -58,28 +65,32 @@ public class Player {
         switch (direction){
             case "Left":
                 if(xCoord==0){
-                    kill();
+                    //kill();
+                    handler.getWorld().player.xCoord = handler.getWorld().GridWidthHeightPixelCount - 1;
                 }else{
                     xCoord--;
                 }
                 break;
             case "Right":
                 if(xCoord==handler.getWorld().GridWidthHeightPixelCount-1){
-                    kill();
+                    //kill();
+                    handler.getWorld().player.xCoord = 0;
                 }else{
                     xCoord++;
                 }
                 break;
             case "Up":
                 if(yCoord==0){
-                    kill();
+                    //kill();
+                    handler.getWorld().player.yCoord = handler.getWorld().GridWidthHeightPixelCount - 1;
                 }else{
                     yCoord--;
                 }
                 break;
             case "Down":
                 if(yCoord==handler.getWorld().GridWidthHeightPixelCount-1){
-                    kill();
+                    //kill();
+                    handler.getWorld().player.yCoord = 0;
                 }else{
                     yCoord++;
                 }
@@ -92,6 +103,28 @@ public class Player {
             Eat();
         }
 
+//        if(!handler.getWorld().body.isEmpty()) {
+//        	int minX, minY, maxX, maxY;
+//        	minX = handler.getWorld().body.getFirst().x;
+//        	minY = handler.getWorld().body.getFirst().y;
+//        	maxX = handler.getWorld().body.getLast().x;
+//        	maxY = handler.getWorld().body.getLast().y; 
+//        	if (handler.getWorld().player.xCoord > minX && handler.getWorld().player.yCoord < maxX)
+//        		kill();
+//        	if (handler.getWorld().player.yCoord > minY && handler.getWorld().player.yCoord < maxY)
+//        		kill();
+//        }
+
+        // Compare player location with each body segment
+		for (int i = 0; i < handler.getWorld().body.size(); i++) {
+			if(handler.getWorld().player.xCoord == handler.getWorld().body.get(i).x &&
+					handler.getWorld().player.yCoord == handler.getWorld().body.get(i).y) {
+				//kill();
+				//State.setState(new MenuState(handler));
+				System.out.println("GAME OVER: " + counter++);
+			}
+		}
+        
         if(!handler.getWorld().body.isEmpty()) {
             handler.getWorld().playerLocation[handler.getWorld().body.getLast().x][handler.getWorld().body.getLast().y] = false;
             handler.getWorld().body.removeLast();
@@ -104,9 +137,18 @@ public class Player {
         Random r = new Random();
         for (int i = 0; i < handler.getWorld().GridWidthHeightPixelCount; i++) {
             for (int j = 0; j < handler.getWorld().GridWidthHeightPixelCount; j++) {
-                g.setColor(Color.WHITE);
+                //g.setColor(Color.WHITE);
 
-                if(playeLocation[i][j]||handler.getWorld().appleLocation[i][j]){
+                if(playeLocation[i][j]){
+                    g.setColor(Color.GREEN);
+                    g.fillRect((i*handler.getWorld().GridPixelsize),
+                            (j*handler.getWorld().GridPixelsize),
+                            handler.getWorld().GridPixelsize,
+                            handler.getWorld().GridPixelsize);
+                }
+                
+                if(handler.getWorld().appleLocation[i][j]){
+                    g.setColor(Color.RED);
                     g.fillRect((i*handler.getWorld().GridPixelsize),
                             (j*handler.getWorld().GridPixelsize),
                             handler.getWorld().GridPixelsize,
@@ -120,6 +162,9 @@ public class Player {
     }
 
     public void Eat(){
+//    	if (handler.getWorld().player.speed > 5)
+//    		handler.getWorld().player.speed -= 1; // increase speed by 1
+    	//System.out.println("Speed: " + handler.getWorld().player.speed);
         lenght++;
         Tail tail= null;
         handler.getWorld().appleLocation[xCoord][yCoord]=false;
